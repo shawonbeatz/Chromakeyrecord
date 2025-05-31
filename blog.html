@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHROMAKEY Record - Blog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* BASE STYLES & RESET (copié de index.html pour cohérence) */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            /* Ajustement pour que le contenu ne soit pas caché par la barre défilante */
+            padding-top: 2rem; /* Augmentez ce padding en fonction de la hauteur de votre barre défilante */
+            /* La barre défilante fait environ 1.5rem de haut avec le padding. 2rem est une bonne marge */
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #22c55e; /* Vert Tailwind 500 */
+        }
+
+        /* Styles pour la barre défilante en haut de page */
+        .scrolling-bar {
+            position: fixed; /* Fixé en haut de l'écran */
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #000; /* Fond noir */
+            color: #22c55e; /* Texte vert */
+            padding: 0.3rem 0; /* Un peu de rembourrage vertical */
+            font-size: 0.9rem; /* Taille de police, ajustez si besoin */
+            white-space: nowrap; /* Empêche le texte de passer à la ligne */
+            overflow: hidden; /* Cache le texte qui dépasse */
+            z-index: 1000; /* Assurez-vous qu'il soit au-dessus de tout le reste, y compris le header */
+            box-shadow: 0 2px 5px rgba(34, 197, 94, 0.3); /* Légère ombre verte */
+        }
+
+        .scrolling-text {
+            display: inline-block; /* Nécessaire pour l'animation de défilement */
+            padding-left: 100%; /* Le texte commence hors de l'écran à droite */
+            animation: scrollText 30s linear infinite; /* Animation de défilement, ajustez la durée (30s) pour la vitesse */
+        }
+
+        @keyframes scrollText {
+            0% { transform: translateX(0); } /* Commence à droite de la barre */
+            100% { transform: translateX(-100%); } /* Défile jusqu'à ce qu'il soit complètement à gauche */
+        }
+
+        /* HEADER (copié de index.html pour cohérence) */
+        .header {
+            position: absolute;
+            /* Décalez le header vers le bas de la hauteur de la barre défilante */
+            top: 2rem;
+            left: 0;
+            width: 100%;
+            z-index: 10;
+            padding: 1rem 1rem; /* p-4 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header .logo img {
+            height: 5rem; /* h-24 */
+            width: 5rem; /* w-24 */
+            object-fit: contain;
+            filter: drop-shadow(0 0 0px rgba(34, 197, 94, 0.0));
+        }
+
+        .nav-desktop {
+            display: none; /* Caché par défaut pour mobile */
+            gap: 2rem; /* space-x-8 */
+            font-size: 1.125rem; /* text-lg */
+        }
+
+        .nav-desktop a {
+            padding: 0.5rem 0;
+            position: relative;
+        }
+
+        .nav-desktop a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #22c55e;
+            transition: width 0.3s ease;
+        }
+
+        .nav-desktop a:hover::after {
+            width: 100%;
+        }
+
+        .hamburger-button {
+            background: none;
+            border: none;
+            color: #22c55e;
+            font-size: 2rem;
+            cursor: pointer;
+            display: block;
+        }
+
+        /* MOBILE NAVIGATION (Overlay) (copié de index.html pour cohérence) */
+        .nav-mobile {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transform: translateX(100%);
+            transition: transform 0.4s ease-out;
+        }
+
+        .nav-mobile.open {
+            transform: translateX(0);
+        }
+
+        .nav-mobile a {
+            font-size: 2.5rem;
+            padding: 1.5rem 0;
+            color: #22c55e;
+        }
+
+        .nav-mobile .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 3rem;
+            cursor: pointer;
+        }
+
+        /* MAIN CONTENT for BLOG */
+        .blog-content {
+            flex-grow: 1; /* Permet au contenu de prendre l'espace disponible */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centre le contenu horizontalement */
+            justify-content: center; /* Centre le contenu verticalement si l'écran est grand */
+            padding: 6rem 1rem 2rem; /* p-4, mais avec plus d'espace en haut pour le header */
+            background: linear-gradient(to bottom right, #1a202c, #000); /* Même dégradé que la page d'accueil */
+            position: relative;
+            z-index: 0;
+            /* Ajustement padding-top pour tenir compte de la barre défilante et du header */
+            padding-top: 8rem; /* Ajustez cette valeur si le contenu se superpose au header */
+        }
+
+        .blog-post {
+            max-width: 48rem; /* max-w-2xl ou 3xl pour un article de blog */
+            width: 100%;
+            padding: 1.5rem;
+            background-color: rgba(26, 32, 44, 0.8); /* bg-gray-900 avec transparence */
+            border-radius: 0.75rem; /* rounded-lg */
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3); /* shadow-lg */
+            margin-top: 2rem; /* Espace au-dessus du post */
+        }
+
+        .blog-post h1 {
+            font-size: 2rem; /* text-3xl */
+            color: #22c55e; /* text-green-500 */
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .blog-post img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem; /* rounded-md */
+            margin-bottom: 1.5rem;
+            display: block; /* Supprime l'espace sous l'image */
+            margin-left: auto; /* Centre l'image */
+            margin-right: auto; /* Centre l'image */
+        }
+
+        .blog-post p {
+            font-size: 1rem; /* text-base */
+            line-height: 1.6; /* leading-relaxed */
+            color: #d1d5db; /* text-gray-300 */
+            margin-bottom: 1rem;
+        }
+
+        /* FOOTER (copié de index.html pour cohérence) */
+        .footer {
+            background-color: #1a202c;
+            color: #a0aec0;
+            text-align: center;
+            padding: 1rem;
+            margin-top: auto;
+        }
+
+        .footer p {
+            font-size: 0.875rem;
+        }
+
+        .footer .footer-links {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .footer .footer-links a {
+            margin: 0 1rem;
+            display: inline-block;
+        }
+
+        /* MEDIA QUERIES (Responsive Design - copié de index.html pour cohérence) */
+        @media (min-width: 768px) { /* md: */
+            .scrolling-bar {
+                font-size: 1rem; /* Ajustez la taille de police pour les écrans plus grands */
+                padding: 0.4rem 0;
+            }
+            body {
+                padding-top: 2.2rem; /* Ajustez le padding pour les écrans plus grands si la barre est plus haute */
+            }
+            .header {
+                top: 2.2rem; /* Ajustez la position du header en conséquence */
+                padding: 2rem 2rem;
+            }
+            .header .logo img {
+                height: 5rem;
+                width: 8rem; /* Cette valeur était 5rem dans votre `index.html` corrigé, harmonisé ici à 8rem comme dans votre `blog.html` original */
+            }
+            .nav-desktop {
+                display: flex;
+            }
+            .hamburger-button {
+                display: none;
+            }
+            .blog-content {
+                padding-top: 10rem; /* Plus d'espace pour le header agrandi */
+            }
+            .blog-post {
+                padding: 2.5rem;
+            }
+            .blog-post h1 {
+                font-size: 3rem;
+            }
+            .blog-post p {
+                font-size: 1.125rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scrolling-bar">
+        <span class="scrolling-text">
+            CHROMAKEY RECORD - Votre univers musical - Des beats exclusifs pour libérer votre créativité ! - CHROMAKEY RECORD - La musique est une thérapie, nos beats votre inspiration ! - CHROMAKEY RECORD - Qualité sonore inégalée -
+        </span>
+    </div>
+    <header class="header">
+        <div class="logo">
+            <img src="/20240505_195256.png" alt="CHROMAKEY Record Logo">
+        </div>
+
+        <nav class="nav-desktop">
+            <a href="index.html">Accueil</a>
+            <a href="blog.html">Blog</a>
+            <a href="Fl-mobile.html">Début Avec Fl</a>
+            <a href="Inspiration.html">Inspiration</a>
+            <a href="beats.html">Beats</a>
+            <a href="apropos.html">A-Propos</a>
+            <a href="Mercrebeat.html">Mercrebeat</a>
+        </nav>
+
+        <button class="hamburger-button" aria-label="Ouvrir le menu de navigation">
+            ☰
+        </button>
+    </header>
+
+    <div class="nav-mobile" id="mobile-menu">
+        <button class="close-button" aria-label="Fermer le menu de navigation">
+            &times;
+        </button>
+        <a href="index.html" class="mobile-link">Accueil</a>
+        <a href="blog.html" class="mobile-link">Blog</a>
+        <a href="Fl-mobile.html" class="mobile-link">Début Avec Fl</a> <a href="Inspiration.html" class="mobile-link">Inspiration</a>
+        <a href="beats.html" class="mobile-link">Beats</a>
+        <a href="apropos.html" class="mobile-link">A-Propos</a>
+        <a href="Mercrebeat.html" class="mobile-link">Mercrebeat</a>
+    </div>
+
+    <main class="blog-content">
+        <div class="blog-post">
+            <h1>𝕀ℕ𝕋ℝ𝕆𝔻𝕌ℂ𝕋𝕀𝕆ℕ</h1>
+            <img src="/introduction qui n'as jamais ressenti.jpg" alt="Image d'illustration du blog">
+
+            <p>𝐐𝐔𝐈 𝐍'𝐀 𝐉𝐀𝐌𝐀𝐈𝐒 𝐑𝐄𝐒𝐒𝐄𝐍𝐓𝐈 𝐔𝐍𝐄 𝐄𝐌𝐎𝐓𝐈𝐎𝐍 𝐈𝐍𝐓𝐄𝐍𝐒𝐄 𝐄𝐍 𝐄𝐂𝐎𝐔𝐓𝐀𝐍𝐓 𝐔𝐍𝐄 𝐌𝐔𝐒𝐈𝐐𝐔𝐄 ? 𝐏𝐎𝐔𝐑 𝐌𝐀 𝐏𝐀𝐑𝐓, 𝐋𝐀 𝐌𝐔𝐒𝐈𝐐𝐔𝐄 𝐀 𝐓𝐎𝐔𝐉𝐎𝐔𝐑𝐒 𝐄𝐓𝐄 𝐁𝐈𝐄𝐍 𝐏𝐋𝐔𝐒 𝐐𝐔'𝐔𝐍 𝐒𝐈𝐌𝐏𝐋𝐄 𝐋𝐎𝐈𝐒𝐈𝐑 : 𝐂'𝐄𝐒𝐓 𝐔𝐍𝐄 𝐕𝐄𝐑𝐈𝐓𝐀𝐁𝐋𝐄 𝐏𝐀𝐒𝐒𝐈𝐎𝐍 𝐐𝐔𝐈 𝐌'𝐀 𝐏𝐎𝐔𝐒𝐒𝐄 𝐀 𝐄𝐗𝐏𝐋𝐎𝐑𝐄𝐑 𝐋𝐄 𝐌𝐎𝐍𝐃𝐄 𝐃𝐄 𝐋𝐀 𝐏𝐑𝐎𝐃𝐔𝐂𝐓𝐈𝐎𝐍 𝐌𝐔𝐒𝐈𝐂𝐀𝐋𝐄. 𝐂'𝐄𝐒𝐓 𝐀𝐈𝐍𝐒𝐈 𝐐𝐔𝐄 𝐉'𝐀𝐈 𝐂𝐎𝐌𝐌𝐄𝐍𝐂𝐄 𝐀 𝐂𝐑𝐄𝐄𝐑 𝐌𝐄𝐒 𝐏𝐑𝐎𝐏𝐑𝐄𝐒 𝐁𝐄𝐀𝐓𝐒, 𝐄𝐓 𝐉𝐄 𝐕𝐎𝐔𝐃𝐑𝐀𝐈𝐒 𝐏𝐀𝐑𝐓𝐀𝐆𝐄𝐑 𝐀𝐕𝐄𝐂 𝐕𝐎𝐔𝐒 𝐌𝐎𝐍 𝐏𝐀𝐑𝐂𝐎𝐔𝐑𝐒.
+            𝐋𝐀 𝐂𝐑𝐄𝐀𝐓𝐈𝐎𝐍 𝐃'𝐔𝐍 𝐁𝐄𝐀𝐓 𝐂𝐎𝐌𝐌𝐄𝐍𝐂𝐄 𝐏𝐀𝐑 𝐋'𝐈𝐍𝐒𝐏𝐈𝐑𝐀𝐓𝐈𝐎𝐍. 𝐐𝐔𝐄 𝐂𝐄 𝐒𝐎𝐈𝐓 𝐔𝐍 𝐒𝐀𝐌𝐏𝐋𝐄, 𝐔𝐍 𝐑𝐘𝐓𝐇𝐌𝐄 𝐄𝐍𝐓𝐄𝐍𝐃𝐔 𝐃𝐀𝐍𝐒 𝐋𝐀 𝐑𝐔𝐄, 𝐎𝐔 𝐔𝐍𝐄 𝐄𝐌𝐎𝐓𝐈𝐎𝐍 𝐏𝐑𝐎𝐅𝐎𝐍𝐃𝐄, 𝐋𝐄 𝐏𝐎𝐈𝐍𝐓 𝐃𝐄 𝐃𝐄𝐏𝐀𝐑𝐓 𝐄𝐒𝐓 𝐓𝐎𝐔𝐉𝐎𝐔𝐑𝐒 𝐔𝐍𝐄 𝐈𝐃𝐄𝐄 𝐁𝐑𝐔𝐓𝐄. 𝐄𝐍𝐒𝐔𝐈𝐓𝐄, 𝐕𝐈𝐄𝐍𝐓 𝐋𝐀 𝐏𝐇𝐀𝐒𝐄 𝐃'𝐄𝐗𝐏𝐄𝐑𝐈𝐌𝐄𝐍𝐓𝐀𝐓𝐈𝐎𝐍 : 𝐂𝐇𝐎𝐈𝐒𝐈𝐑 𝐋𝐄𝐒 𝐁𝐎𝐍𝐍𝐄𝐒 𝐒𝐎𝐍𝐎𝐑𝐈𝐓𝐄𝐒 𝐃𝐄 𝐊𝐈𝐂𝐊, 𝐒𝐍𝐀𝐑𝐄, 𝐄𝐓 𝐇𝐈-𝐇𝐀𝐓𝐒 𝐐𝐔𝐈 𝐃𝐎𝐍𝐍𝐄𝐑𝐎𝐍𝐓 𝐋𝐄 𝐆𝐑𝐎𝐎𝐕𝐄. 𝐋'𝐀𝐉𝐎𝐔𝐓 𝐃'𝐔𝐍𝐄 𝐋𝐈𝐆𝐍𝐄 𝐃𝐄 𝐁𝐀𝐒𝐒𝐄 𝐏𝐄𝐑𝐂𝐔𝐓𝐀𝐍𝐓𝐄 𝐄𝐓 𝐃𝐄 𝐌𝐄𝐋𝐎𝐃𝐈𝐄𝐒 𝐄𝐍𝐓𝐑𝐀𝐈𝐍𝐀𝐍𝐓𝐄𝐒 𝐓𝐑𝐀𝐍𝐒𝐅𝐎𝐑𝐌𝐄 𝐋'𝐄𝐁𝐀𝐔𝐂𝐇𝐄 𝐄𝐍 𝐔𝐍𝐄 𝐕𝐄𝐑𝐈𝐓𝐀𝐁𝐋𝐄 𝐅𝐎𝐍𝐃𝐀𝐓𝐈𝐎𝐍.
+            </p>
+
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; <span id="currentYearBlog"></span> CHROMAKEY Record. Tous droits réservés.</p>
+        <div class="footer-links">
+            <a href="#mentions-legales">Mentions Légales</a>
+            <a href="#cgv">Conditions Générales de Vente</a>
+        </div>
+    </footer>
+
+    <script>
+        // JavaScript pour la logique du bouton hamburger (copié de index.html pour cohérence)
+        const hamburgerButton = document.querySelector('.hamburger-button');
+        const closeButton = document.querySelector('.nav-mobile .close-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.nav-mobile .mobile-link');
+        const currentYearSpan = document.getElementById('currentYearBlog'); // Changé l'ID pour ne pas interférer avec index.html
+
+        // Mettre à jour l'année courante dans le footer
+        if (currentYearSpan) { // Ajout d'une vérification au cas où l'élément ne serait pas trouvé
+            currentYearSpan.textContent = new Date().getFullYear();
+        }
+
+        // Ouvrir le menu mobile
+        if (hamburgerButton) { // Ajout d'une vérification au cas où l'élément ne serait pas trouvé
+            hamburgerButton.addEventListener('click', () => {
+                if (mobileMenu) {
+                    mobileMenu.classList.add('open');
+                }
+            });
+        }
+
+        // Fermer le menu mobile
+        if (closeButton) { // Ajout d'une vérification au cas où l'élément ne serait pas trouvé
+            closeButton.addEventListener('click', () => {
+                if (mobileMenu) {
+                    mobileMenu.classList.remove('open');
+                }
+            });
+        }
+
+        // Fermer le menu mobile quand un lien est cliqué
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (mobileMenu) {
+                    mobileMenu.classList.remove('open');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

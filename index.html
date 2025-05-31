@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHROMAKEY Record - L'univers de la musique</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* BASE STYLES & RESET */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace; /* Police monospace comme demandé */
+            background-color: #000; /* Fond noir */
+            color: #fff; /* Texte blanc par défaut */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden; /* Empêche le défilement horizontal */
+            /* Ajustement pour que le contenu ne soit pas caché par la barre défilante */
+            padding-top: 2rem; /* Augmentez ce padding en fonction de la hauteur de votre barre défilante */
+            /* La barre défilante fait environ 1.5rem de haut avec le padding. 2rem est une bonne marge */
+        }
+
+        a {
+            color: inherit; /* Liens héritent la couleur du parent */
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #22c55e; /* Vert Tailwind 500 */
+        }
+
+        /* Styles pour la barre défilante en haut de page */
+        .scrolling-bar {
+            position: fixed; /* Fixé en haut de l'écran */
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #000; /* Fond noir */
+            color: #22c55e; /* Texte vert */
+            padding: 0.3rem 0; /* Un peu de rembourrage vertical */
+            font-size: 0.9rem; /* Taille de police, ajustez si besoin */
+            white-space: nowrap; /* Empêche le texte de passer à la ligne */
+            overflow: hidden; /* Cache le texte qui dépasse */
+            z-index: 1000; /* Assurez-vous qu'il soit au-dessus de tout le reste, y compris le header et le preloader */
+            box-shadow: 0 2px 5px rgba(34, 197, 94, 0.3); /* Légère ombre verte */
+        }
+
+        .scrolling-text {
+            display: inline-block; /* Nécessaire pour l'animation de défilement */
+            padding-left: 100%; /* Le texte commence hors de l'écran à droite */
+            animation: scrollText 30s linear infinite; /* Animation de défilement, ajustez la durée (30s) pour la vitesse */
+        }
+
+        @keyframes scrollText {
+            0% { transform: translateX(0); } /* Commence à droite de la barre */
+            100% { transform: translateX(-100%); } /* Défile jusqu'à ce qu'il soit complètement à gauche */
+        }
+
+        /* HEADER */
+        .header {
+            position: absolute;
+            /* Décalez le header vers le bas de la hauteur de la barre défilante */
+            top: 2rem;
+            left: 0;
+            width: 100%;
+            z-index: 10;
+            padding: 1rem 1rem; /* p-4 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header .logo img {
+            height: 5rem; /* h-24 */
+            width: 5rem; /* w-24 */
+            object-fit: contain;
+            filter: drop-shadow(0 0 0px rgba(34, 197, 94, 0.5)); /* Ombre verte pour le logo */
+            opacity: 50px;
+        }
+
+        .nav-desktop {
+            display: none; /* Caché par défaut pour mobile */
+            gap: 2rem; /* space-x-8 */
+            font-size: 1.125rem; /* text-lg */
+        }
+
+        .nav-desktop a {
+            padding: 0.5rem 0;
+            position: relative;
+        }
+
+        .nav-desktop a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #22c55e; /* Vert */
+            transition: width 0.3s ease;
+        }
+
+        .nav-desktop a:hover::after {
+            width: 100%;
+        }
+
+        .hamburger-button {
+            background: none;
+            border: none;
+            color: #22c55e; /* Vert Tailwind 500 */
+            font-size: 2rem; /* text-3xl */
+            cursor: pointer;
+            display: block; /* Affiché par défaut pour mobile */
+        }
+
+        /* MOBILE NAVIGATION (Overlay) */
+        .nav-mobile {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95); /* Fond semi-transparent */
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transform: translateX(100%); /* Commence hors écran */
+            transition: transform 0.4s ease-out;
+        }
+
+        .nav-mobile.open {
+            transform: translateX(0); /* Glisse en place */
+        }
+
+        .nav-mobile a {
+            font-size: 2.5rem; /* Large pour mobile */
+            padding: 1.5rem 0;
+            color: #22c55e; /* Vert */
+        }
+
+        .nav-mobile .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 3rem;
+            cursor: pointer;
+        }
+
+        /* MAIN SECTION */
+        .main-content {
+            position: relative;
+            z-index: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem; /* p-4 */
+            /* Ajout d'un padding-top pour tenir compte du header et de la barre défilante */
+            padding-top: 8rem; /* Ajustez cette valeur si le contenu se superpose au header */
+        }
+
+        .background-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom right, #1a202c, #000); /* from-gray-900 to-black */
+            opacity: 0.9;
+        }
+
+        .circular-element {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 16rem; /* w-64 */
+            height: 16rem; /* h-64 */
+            border-radius: 9999px; /* rounded-full */
+            background-color: rgba(34, 197, 94, 0.2); /* green-700 opacity-20 */
+            animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1); /* animate-pulse */
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.4; }
+        }
+
+        .hero-section {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 56rem; /* max-w-4xl */
+            margin: 0 auto;
+        }
+
+        .hero-section h1 {
+            font-size: 2.25rem; /* text-4xl */
+            line-height: 1.25; /* leading-tight */
+            font-weight: 700; /* font-bold */
+            color: #22c55e; /* text-green-500 */
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); /* drop-shadow-lg */
+        }
+
+        .hero-section p {
+            margin-top: 1rem; /* mt-4 */
+            font-size: 1.125rem; /* text-lg */
+            color: #d1d5db; /* text-gray-300 */
+        }
+
+        .cta-button {
+            margin-top: 2rem; /* mt-8 */
+            display: inline-block;
+            background-color: #16a34a; /* bg-green-600 */
+            color: #fff;
+            font-weight: 700; /* font-bold */
+            padding: 0.75rem 2rem; /* py-3 px-8 */
+            border-radius: 9999px; /* rounded-full */
+            font-size: 1.25rem; /* text-xl */
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3); /* shadow-lg */
+        }
+
+        .cta-button:hover {
+            background-color: #15803d; /* hover:bg-green-700 */
+            transform: scale(1.05); /* hover:scale-105 */
+        }
+
+        .social-links {
+            margin-top: 3rem; /* mt-12 */
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem; /* space-x-6 */
+            color: #4ade80; /* text-green-400 */
+        }
+
+        .social-links a {
+            font-size: 2.5rem; /* text-4xl */
+            transition: color 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: #bbf7d0; /* hover:text-green-200 */
+        }
+
+        /* FOOTER */
+        .footer {
+            background-color: #1a202c; /* bg-gray-900 */
+            color: #a0aec0; /* text-gray-500 */
+            text-align: center;
+            padding: 1rem; /* p-4 */
+            margin-top: auto; /* Pousse le footer en bas */
+        }
+
+        .footer p {
+            font-size: 0.875rem; /* text-sm */
+        }
+
+        .footer .footer-links {
+            margin-top: 0.5rem; /* mt-2 */
+            font-size: 0.875rem; /* text-sm */
+        }
+
+        .footer .footer-links a {
+            margin: 0 1rem; /* mr-4 */
+            display: inline-block;
+        }
+
+        /* Écran de chargement (Splash Screen) */
+        .preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000; /* Fond noir */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999; /* Très haut, pour être au-dessus de tout */
+            transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .preloader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .preloader-logo {
+            width: 8rem; /* h-32 */
+            height: 8rem; /* w-32 */
+            object-fit: contain;
+            animation: pulse-preloader 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        }
+
+        @keyframes pulse-preloader {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        /* MEDIA QUERIES (Responsive Design) */
+        @media (min-width: 768px) { /* md: equivalent de Tailwind (768px est une taille commune pour "medium") */
+            .scrolling-bar {
+                font-size: 1rem; /* Ajustez la taille de police pour les écrans plus grands */
+                padding: 0.4rem 0;
+            }
+            body {
+                padding-top: 2.2rem; /* Ajustez le padding pour les écrans plus grands si la barre est plus haute */
+            }
+            .header {
+                top: 2.2rem; /* Ajustez la position du header en conséquence */
+                padding: 2rem 2rem; /* p-8 */
+            }
+            .header .logo img {
+                height: 5rem; /* h-32 */
+                width: 5rem; /* w-32 */
+            }
+            .nav-desktop {
+                display: flex; /* Affiché sur desktop */
+            }
+            .hamburger-button {
+                display: none; /* Caché sur desktop */
+            }
+            .hero-section h1 {
+                font-size: 3.75rem; /* text-6xl */
+            }
+            .hero-section p {
+                margin-top: 1.5rem; /* mt-6 */
+                font-size: 1.5rem; /* text-2xl */
+            }
+            .circular-element {
+                width: 24rem; /* w-96 */
+                height: 24rem; /* h-96 */
+            }
+            .main-content {
+                padding-top: 10rem; /* Ajustement pour le desktop, si le header est plus grand */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scrolling-bar">
+        <span class="scrolling-text">
+            CHROMAKEY RECORD - Votre univers musical - Des beats exclusifs pour libérer votre créativité ! - CHROMAKEY RECORD - La musique est une thérapie, nos beats votre inspiration ! - CHROMAKEY RECORD - Qualité sonore inégalée -
+        </span>
+    </div>
+    <div class="preloader" id="preloader">
+        <img src="/20240505_195256.png" alt="CHROMAKEY Record Logo" class="preloader-logo">
+    </div>
+    <header class="header">
+        <div class="logo">
+            <img src="/20240505_195256.png" alt="CHROMAKEY Record Logo">
+        </div>
+
+        <nav class="nav-desktop">
+            <a href="index.html">Accueil</a>
+            <a href="blog.html">Blog</a>
+            <a href="Fl-mobile.html">Début Avec Fl</a>
+            <a href="Inspiration.html">Inspiration</a>
+            <a href="beats.html">Beats</a>
+            <a href="apropos.html">A-Propos</a>
+            <a href="Mercrebeat.html">Mercrebeat</a>
+        </nav>
+
+        <button class="hamburger-button" aria-label="Ouvrir le menu de navigation">
+            ☰
+        </button>
+    </header>
+
+    <div class="nav-mobile" id="mobile-menu">
+        <button class="close-button" aria-label="Fermer le menu de navigation">
+            ×
+        </button>
+        <a href="index.html" class="mobile-link">Accueil</a>
+        <a href="blog.html" class="mobile-link">Blog</a>
+        <a href="Fl-mobile.html" class="mobile-link">Début Avec Fl</a>
+        <a href="Inspiration.html" class="mobile-link">Inspiration</a>
+        <a href="beats.html" class="mobile-link">Beats</a>
+        <a href="apropos.html" class="mobile-link">A-Propos</a>
+        <a href="Mercrebeat.html" class="mobile-link">Mercrebeat</a>
+    </div>
+
+    <main class="main-content">
+        <div class="background-overlay"></div>
+        <div class="circular-element"></div>
+        <section class="hero-section">
+            <h1>𝔹𝕀𝔼ℕ𝕍𝔼ℕ𝕌𝔼 ℂℍ𝔼ℤ ℂℍℝ𝕆𝕄𝔸𝕂𝔼𝕐 ℝ𝔼ℂ𝕆ℝ𝔻</h1>
+            <p>𝑴𝒐𝒊, 𝑺𝒉𝒂𝒘𝒐𝒏 𝑫𝑮 𝒅𝒆 𝑪𝑯𝑹𝑶𝑴𝑨𝑲𝑬𝒀, 𝒗𝒐𝒖𝒔 𝒑𝒓𝒆𝒔𝒆𝒏𝒕𝒆 𝒍'𝒖𝒏𝒊𝒗𝒆𝒓𝒔 𝒅'𝒂𝒓𝒕, 𝒐𝒖 𝒄𝒉𝒂𝒒𝒖𝒆 𝒃𝒆𝒂𝒕 𝒆𝒔𝒕 𝒖𝒏𝒆 𝒐𝒆𝒖𝒗𝒓𝒆 𝒅'𝒂𝒓𝒕, 𝒖𝒏 𝒎𝒐𝒚𝒆𝒏 𝒅'𝒆𝒙𝒑𝒓𝒊𝒎𝒆𝒓 𝒅𝒆𝒔 𝒆𝒎𝒐𝒕𝒊𝒐𝒏𝒔. 𝑬𝒏 𝒕𝒂𝒏𝒕 𝒒𝒖𝒆 𝑫𝒐𝒄𝒕𝒆𝒖𝒓 𝒅𝒆 𝒍𝒂 𝑫𝒓𝒊𝒍𝒍, 𝒋𝒆 𝒗𝒐𝒖𝒔 𝒊𝒏𝒗𝒊𝒕𝒆 𝒂 𝒅𝒆𝒄𝒐𝒖𝒗𝒓𝒊𝒓 𝒖𝒏 𝒎𝒐𝒏𝒅𝒆 𝒐𝒖 𝒍𝒂 𝒄𝒓𝒆𝒂𝒕𝒊𝒗𝒊𝒕é 𝒑𝒓𝒆𝒏𝒅 𝒗𝒊𝒆.
+            </p>
+            <a href="beats.html" class="cta-button">Découvrir Nos Beats</a>
+
+            <div class="social-links">
+                <a href="https://www.instagram.com/shawonbeatz?igsh=YzljYTk1ODg3Zg==" target="_blank" aria-label="Instagram de CHROMAKEY Record"><i class="fab fa-instagram"></i></a>
+                <a href="https://x.com/Shawonbeatz?t=mOwQTUm8u9Veukvy9458yA&s=09" target="_blank" aria-label="Twitter/X de CHROMAKEY Record"><i class="fab fa-twitter"></i></a>
+                <a href="https://www.youtube.com/channel/votre_identifiant_youtube" target="_blank" aria-label="YouTube de CHROMAKEY Record"><i class="fab fa-youtube"></i></a>
+                <a href="https://www.tiktok.com/@shawon.beatz?_t=ZM-8wocPJ1M53g&_r=1" target="_blank" aria-label="TikTok de CHROMAKEY Record"><i class="fab fa-tiktok"></i></a>
+                <a href="https://wa.me/243995988013" target="_blank" aria-label="WhatsApp de CHROMAKEY Record"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://www.facebook.com/shawonbeats" target="_blank" aria-label="Facebook de CHROMAKEY Record"><i class="fab fa-facebook"></i></a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>© <span id="currentYear"></span> CHROMAKEY Record. Tous droits réservés.</p>
+        <div class="footer-links">
+            <a href="#mentions-legales">Mentions Légales</a>
+            <a href="#cgv">Conditions Générales de Vente</a>
+        </div>
+    </footer>
+
+    <script>
+        // JavaScript pour l'écran de chargement (splash screen)
+        window.addEventListener('load', () => {
+            const preloader = document.getElementById('preloader');
+            if (preloader) {
+                preloader.classList.add('hidden');
+                // Optionnel: supprimer l'élément du DOM après la transition
+                preloader.addEventListener('transitionend', () => {
+                    preloader.remove();
+                });
+            }
+        });
+
+        // JavaScript pour la logique du bouton hamburger
+        const hamburgerButton = document.querySelector('.hamburger-button');
+        const closeButton = document.querySelector('.nav-mobile .close-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.nav-mobile .mobile-link');
+        const currentYearSpan = document.getElementById('currentYear');
+
+        // Mettre à jour l'année courante dans le footer
+        if (currentYearSpan) {
+            currentYearSpan.textContent = new Date().getFullYear();
+        }
+        // Ouvrir le menu mobile
+        if (hamburgerButton) {
+            hamburgerButton.addEventListener('click', () => {
+                if (mobileMenu) {
+                    mobileMenu.classList.add('open');
+                }
+            });
+        }
+
+        // Fermer le menu mobile
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                if (mobileMenu) {
+                    mobileMenu.classList.remove('open');
+                }
+            });
+        }
+
+        // Fermer le menu mobile quand un lien est cliqué
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (mobileMenu) {
+                    mobileMenu.classList.remove('open');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

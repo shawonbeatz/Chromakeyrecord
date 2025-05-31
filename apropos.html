@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHROMAKEY Record - À Propos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* BASE STYLES & RESET (copié de index.html pour cohérence) */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            /* Ajustement pour que le contenu ne soit pas caché par la barre défilante */
+            padding-top: 2rem; /* Augmentez ce padding en fonction de la hauteur de votre barre défilante */
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #22c55e; /* Vert Tailwind 500 */
+        }
+
+        /* Styles pour la barre défilante en haut de page */
+        .scrolling-bar {
+            position: fixed; /* Fixé en haut de l'écran */
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #000; /* Fond noir */
+            color: #22c55e; /* Texte vert */
+            padding: 0.3rem 0; /* Un peu de rembourrage vertical */
+            font-size: 0.9rem; /* Taille de police, ajustez si besoin */
+            white-space: nowrap; /* Empêche le texte de passer à la ligne */
+            overflow: hidden; /* Cache le texte qui dépasse */
+            z-index: 1000; /* Assurez-vous qu'il soit au-dessus de tout le reste, y compris le header */
+            box-shadow: 0 2px 5px rgba(34, 197, 94, 0.3); /* Légère ombre verte */
+        }
+
+        .scrolling-text {
+            display: inline-block; /* Nécessaire pour l'animation de défilement */
+            padding-left: 100%; /* Le texte commence hors de l'écran à droite */
+            animation: scrollText 30s linear infinite; /* Animation de défilement, ajustez la durée (30s) pour la vitesse */
+        }
+
+        @keyframes scrollText {
+            0% { transform: translateX(0); } /* Commence à droite de la barre */
+            100% { transform: translateX(-100%); } /* Défile jusqu'à ce qu'il soit complètement à gauche */
+        }
+
+        /* HEADER (copié de index.html pour cohérence) */
+        .header {
+            position: absolute;
+            /* Décalez le header vers le bas de la hauteur de la barre défilante */
+            top: 2rem;
+            left: 0;
+            width: 100%;
+            z-index: 10;
+            padding: 1rem 1rem; /* p-4 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header .logo img {
+            height: 5rem; /* h-24 */
+            width: 5rem; /* w-24 */
+            object-fit: contain;
+            filter: drop-shadow(0 0 0px rgba(0, 0, 0, 1));
+        }
+
+        .nav-desktop {
+            display: none; /* Caché par défaut pour mobile */
+            gap: 2rem; /* space-x-8 */
+            font-size: 1.125rem; /* text-lg */
+        }
+
+        .nav-desktop a {
+            padding: 0.5rem 0;
+            position: relative;
+        }
+
+        .nav-desktop a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #22c55e;
+            transition: width 0.3s ease;
+        }
+
+        .nav-desktop a:hover::after {
+            width: 100%;
+        }
+
+        .hamburger-button {
+            background: none;
+            border: none;
+            color: #22c55e;
+            font-size: 2rem;
+            cursor: pointer;
+            display: block;
+        }
+
+        /* MOBILE NAVIGATION (Overlay) (copié de index.html pour cohérence) */
+        .nav-mobile {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transform: translateX(100%);
+            transition: transform 0.4s ease-out;
+        }
+
+        .nav-mobile.open {
+            transform: translateX(0);
+        }
+
+        .nav-mobile a {
+            font-size: 2.5rem;
+            padding: 1.5rem 0;
+            color: #22c55e;
+        }
+
+        .nav-mobile .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 3rem;
+            cursor: pointer;
+        }
+
+        /* --- STYLES FOR BACKGROUND OVERLAY AND CIRCULAR ELEMENT --- */
+        .background-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom right, #1a202c, #000); /* from-gray-900 to-black */
+            opacity: 0.9;
+            z-index: -1; /* S'assure qu'il est en arrière-plan */
+        }
+
+        .circular-element {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 16rem; /* w-64 */
+            height: 16rem; /* h-64 */
+            border-radius: 9999px; /* rounded-full */
+            background-color: rgba(34, 197, 94, 0.2); /* green-700 opacity-20 */
+            animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1); /* animate-pulse */
+            z-index: -1; /* S'assure qu'il est en arrière-plan */
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 0.4; }
+        }
+        /* --- FIN DES STYLES POUR LE FOND --- */
+
+        /* MAIN CONTENT for ABOUT PAGE */
+        .about-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 6rem 1rem 2rem;
+            position: relative;
+            z-index: 0;
+            overflow: hidden;
+            /* Ajustement padding-top pour tenir compte de la barre défilante et du header */
+            padding-top: 8rem; /* Ajustez cette valeur si le contenu se superpose au header */
+        }
+
+        .about-section {
+            max-width: 48rem;
+            width: 100%;
+            padding: 1.5rem;
+            background-color: rgba(26, 32, 44, 0.8);
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem; /* Espace entre les sections */
+            position: relative;
+            z-index: 1;
+        }
+
+        .about-section h2 {
+            font-size: 2rem;
+            color: #22c55e;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Styles for Mathematical Italic Bold (for general text) */
+        .about-section p {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #d1d5db;
+            margin-bottom: 1rem;
+        }
+        /* Style pour les titres de section, si vous voulez le même que "BIENVENUE" */
+        .about-section h2.script-bold-title {
+            font-family: 'Times New Roman', serif; /* Fallback si le caractère unicode n'est pas supporté */
+            font-size: 2.5rem; /* Ajustez la taille si nécessaire */
+            /* Aucun style CSS direct ne peut rendre les caractères unicode 'Mathematical Script Bold' gras */
+            /* Le rendu dépendra du support de la police sur le système de l'utilisateur. */
+            color: #22c55e;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            /* Pour un rendu plus sûr, on utiliserait une image ou une police web */
+        }
+
+        /* CAROUSEL / SLIDER STYLES FOR "Personnel" section */
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 0.75rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            background-color: #000; /* Fond noir pour les bordures */
+            aspect-ratio: 16 / 9; /* Ratio commun pour les images */
+            max-width: 40rem; /* Limite la largeur du carrousel */
+            margin: 0 auto; /* Centrage */
+        }
+
+        .carousel-wrapper {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .carousel-slide {
+            min-width: 100%; /* Chaque slide prend 100% de la largeur du conteneur */
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #1a202c; /* Couleur de fond si l'image ne couvre pas tout */
+        }
+
+        .carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Couvre l'espace sans déformer l'image */
+            border-radius: 0.75rem;
+        }
+
+        .carousel-dots {
+            position: absolute;
+            bottom: 0.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.5rem;
+            z-index: 2;
+        }
+
+        .carousel-dot {
+            width: 0.75rem;
+            height: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .carousel-dot.active {
+            background-color: #22c55e;
+        }
+
+        /* FOOTER (copié de index.html pour cohérence) */
+        .footer {
+            background-color: #1a202c;
+            color: #a0aec0;
+            text-align: center;
+            padding: 1rem;
+            margin-top: auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer p {
+            font-size: 0.875rem;
+        }
+
+        .footer .footer-links {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .footer .footer-links a {
+            margin: 0 1rem;
+            display: inline-block;
+        }
+
+        /* MEDIA QUERIES (Responsive Design) */
+        @media (min-width: 768px) { /* md: */
+            .scrolling-bar {
+                font-size: 1rem; /* Ajustez la taille de police pour les écrans plus grands */
+                padding: 0.4rem 0;
+            }
+            body {
+                padding-top: 2.2rem; /* Ajustez le padding pour les écrans plus grands si la barre est plus haute */
+            }
+            .header {
+                top: 2.2rem; /* Ajustez la position du header en conséquence */
+                padding: 2rem 2rem;
+            }
+            .header .logo img {
+                height: 5rem;
+                width: 5rem;
+            }
+            .nav-desktop {
+                display: flex;
+            }
+            .hamburger-button {
+                display: none;
+            }
+            .about-content {
+                padding-top: 10rem; /* Plus d'espace pour le header agrandi */
+            }
+            .about-section {
+                padding: 2.5rem;
+            }
+            .about-section h2 {
+                font-size: 3rem;
+            }
+            .about-section h2.script-bold-title {
+                font-size: 3.5rem;
+            }
+            .about-section p {
+                font-size: 1.125rem;
+            }
+            .circular-element {
+                width: 24rem; /* w-96 */
+                height: 24rem; /* h-96 */
+            }
+             /* Carrousel sur grand écran - peut-être montrer plus d'images ou plus grandes */
+            .carousel-container {
+                max-width: 50rem; /* Plus grand sur desktop */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scrolling-bar">
+        <span class="scrolling-text">
+            CHROMAKEY RECORD - Votre univers musical - Des beats exclusifs pour libérer votre créativité ! - CHROMAKEY RECORD - La musique est une thérapie, nos beats votre inspiration ! - CHROMAKEY RECORD - Qualité sonore inégalée -
+        </span>
+    </div>
+    <header class="header">
+        <div class="logo">
+            <img src="/20240505_195256.png" alt="CHROMAKEY Record Logo">
+        </div>
+
+        <nav class="nav-desktop">
+            <a href="index.html">Accueil</a>
+            <a href="blog.html">Blog</a>
+            <a href="Fl-mobile.html">Début Avec Fl</a>
+            <a href="Inspiration.html">Inspiration</a>
+            <a href="beats.html">Beats</a>
+            <a href="apropos.html">À-Propos</a>
+            <a href="Mercrebeat.html">Mercrebeat</a>
+        </nav>
+
+        <button class="hamburger-button" aria-label="Ouvrir le menu de navigation">
+            ☰
+        </button>
+    </header>
+
+    <div class="nav-mobile" id="mobile-menu">
+        <button class="close-button" aria-label="Fermer le menu de navigation">
+            &times;
+        </button>
+        <a href="index.html" class="mobile-link">Accueil</a>
+        <a href="blog.html" class="mobile-link">Blog</a>
+        <a href="Fl-mobile.html" class="mobile-link">Début Avec Fl</a>
+        <a href="Inspiration.html" class="mobile-link">Inspiration</a>
+        <a href="beats.html" class="mobile-link">Beats</a>
+        <a href="apropos.html" class="mobile-link">À-Propos</a>
+        <a href="Mercrebeat.html" class="mobile-link">Mercrebeat</a>
+    </div>
+
+    <main class="about-content">
+        <div class="background-overlay"></div>
+        <div class="circular-element"></div>
+
+      
+        <div class="about-section" id="mixage-mastering">
+            <h2>𝕄𝕀𝕏𝔸𝔾𝔼</h2>
+            <p>
+               Une fois le beat créé, vient l'étape du mixage et du mastering. C'est une phase que j'adore particulièrement. J'aime jouer avec les fréquences, les effets, et donner à mon morceau une couleur unique.
+            </p>
+        </div>
+
+        <div class="about-section" id="personnel">
+            <h2>ℙ𝔼ℝ𝕊𝕆ℕℕ𝔼𝕃</h2>
+            <p>
+                Découvrez l'âme derrière CHROMAKEY Record. En tant que Directeur Général et Docteur de la Drill.
+            </p>
+            <div class="carousel-container">
+                <div class="carousel-wrapper" id="personal-carousel">
+                    <div class="carousel-slide"><img src="/_LUS1614_2.jpg" alt="Shawon DG 1"></div>
+                    <div class="carousel-slide"><img src="/_LUS1610_2.jpg" alt="Shawon DG 2"></div>
+                    <div class="carousel-slide"><img src="/shawon_1.jpg" alt="Shawon DG 3"></div>
+                </div>
+                <div class="carousel-dots" id="carousel-dots">
+                </div>
+            </div>
+        </div>
+
+        <div class="about-section" id="conclusion">
+            <h2>ℂ𝕆ℕℂ𝕃𝕌𝕊𝕀𝕆ℕ</h2>
+            <p>
+                La production musicale est une aventure passionnante qui m'apporte beaucoup de joie. J'espère que mon parcours vous inspirera à vous lancer dans cette voie.
+            </p>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; <span id="currentYearAbout"></span> CHROMAKEY Record. Tous droits réservés.</p>
+        <div class="footer-links">
+            <a href="#mentions-legales">Mentions Légales</a>
+            <a href="#cgv">Conditions Générales de Vente</a>
+        </div>
+    </footer>
+
+    <script>
+        // JavaScript pour la logique du bouton hamburger (copié de index.html pour cohérence)
+        const hamburgerButton = document.querySelector('.hamburger-button');
+        const closeButton = document.querySelector('.nav-mobile .close-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.nav-mobile .mobile-link');
+        const currentYearSpan = document.getElementById('currentYearAbout');
+
+        if (currentYearSpan) { // Ajout d'une vérification pour s'assurer que l'élément existe
+            currentYearSpan.textContent = new Date().getFullYear();
+        }
+
+        if (hamburgerButton) { // Ajout d'une vérification pour s'assurer que l'élément existe
+            hamburgerButton.addEventListener('click', () => {
+                if (mobileMenu) {
+                    mobileMenu.classList.add('open');
+                }
+            });
+        }
+
+        if (closeButton) { // Ajout d'une vérification pour s'assurer que l'élément existe
+            closeButton.addEventListener('click', () => {
+                if (mobileMenu) {
+                    mobileMenu.classList.remove('open');
+                }
+            });
+        }
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (mobileMenu) {
+                    mobileMenu.classList.remove('open');
+                }
+            });
+        });
+
+        // --- JavaScript pour le Carrousel d'Images "Personnel" ---
+        const carouselWrapper = document.getElementById('personal-carousel');
+        const slides = document.querySelectorAll('#personal-carousel .carousel-slide'); // Cibler les slides dans le carrousel spécifique
+        const dotsContainer = document.getElementById('carousel-dots');
+        let currentIndex = 0;
+        let slideInterval;
+
+        if (slides.length > 0 && dotsContainer) { // S'assurer que les éléments existent
+            // Créer les points de navigation (dots)
+            slides.forEach((_, index) => {
+                const dot = document.createElement('div');
+                dot.classList.add('carousel-dot');
+                if (index === 0) dot.classList.add('active');
+                dot.addEventListener('click', () => moveToSlide(index));
+                dotsContainer.appendChild(dot);
+            });
+            const dots = document.querySelectorAll('#carousel-dots .carousel-dot'); // Cibler les dots dans leur conteneur spécifique
+
+            function updateCarousel() {
+                const offset = -currentIndex * 100;
+                carouselWrapper.style.transform = `translateX(${offset}%)`;
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentIndex);
+                });
+            }
+
+            function moveToSlide(index) {
+                currentIndex = index;
+                updateCarousel();
+                resetInterval();
+            }
+
+            function nextSlide() {
+                currentIndex = (currentIndex + 1) % slides.length;
+                updateCarousel();
+            }
+
+            function startInterval() {
+                slideInterval = setInterval(nextSlide, 5000); // Change d'image toutes les 5 secondes
+            }
+
+            function resetInterval() {
+                clearInterval(slideInterval);
+                startInterval();
+            }
+
+            // Initialiser le carrousel
+            updateCarousel();
+            startInterval();
+        }
+    </script>
+</body>
+</html>

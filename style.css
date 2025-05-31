@@ -1,0 +1,262 @@
+/* BASE STYLES & RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto Mono', monospace; /* Police monospace comme demandé */
+    background-color: #000; /* Fond noir */
+    color: #fff; /* Texte blanc par défaut */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden; /* Empêche le défilement horizontal */
+}
+
+a {
+    color: inherit; /* Liens héritent la couleur du parent */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #22c55e; /* Vert Tailwind 500 */
+}
+
+/* HEADER */
+.header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10;
+    padding: 1rem 1rem; /* p-4 */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header .logo img {
+    height: 6rem; /* h-24 */
+    width: 6rem; /* w-24 */
+    object-fit: contain;
+    filter: drop-shadow(0 0 0px rgba(34, 197, 94, 0.5)); /* Ombre verte pour le logo */
+}
+
+.nav-desktop {
+    display: none; /* Caché par défaut pour mobile */
+    gap: 2rem; /* space-x-8 */
+    font-size: 1.125rem; /* text-lg */
+}
+
+.nav-desktop a {
+    padding: 0.5rem 0;
+    position: relative;
+}
+
+.nav-desktop a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #22c55e; /* Vert */
+    transition: width 0.3s ease;
+}
+
+.nav-desktop a:hover::after {
+    width: 100%;
+}
+
+.hamburger-button {
+    background: none;
+    border: none;
+    color: #22c55e; /* Vert Tailwind 500 */
+    font-size: 2rem; /* text-3xl */
+    cursor: pointer;
+    display: block; /* Affiché par défaut pour mobile */
+}
+
+/* MOBILE NAVIGATION (Overlay) */
+.nav-mobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.95); /* Fond semi-transparent */
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transform: translateX(100%); /* Commence hors écran */
+    transition: transform 0.4s ease-out;
+}
+
+.nav-mobile.open {
+    transform: translateX(0); /* Glisse en place */
+}
+
+.nav-mobile a {
+    font-size: 2.5rem; /* Large pour mobile */
+    padding: 1.5rem 0;
+    color: #22c55e; /* Vert */
+}
+
+.nav-mobile .close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 3rem;
+    cursor: pointer;
+}
+
+/* MAIN SECTION */
+.main-content {
+    position: relative;
+    z-index: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem; /* p-4 */
+}
+
+.background-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom right, #1a202c, #000); /* from-gray-900 to-black */
+    opacity: 0.9;
+}
+
+.circular-element {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16rem; /* w-64 */
+    height: 16rem; /* h-64 */
+    border-radius: 9999px; /* rounded-full */
+    background-color: rgba(34, 197, 94, 0.2); /* green-700 opacity-20 */
+    animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1); /* animate-pulse */
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.4; }
+}
+
+.hero-section {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    max-width: 56rem; /* max-w-4xl */
+    margin: 0 auto;
+}
+
+.hero-section h1 {
+    font-size: 2.25rem; /* text-4xl */
+    line-height: 1.25; /* leading-tight */
+    font-weight: 700; /* font-bold */
+    color: #22c55e; /* text-green-500 */
+    text-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); /* drop-shadow-lg */
+}
+
+.hero-section p {
+    margin-top: 1rem; /* mt-4 */
+    font-size: 1.125rem; /* text-lg */
+    color: #d1d5db; /* text-gray-300 */
+}
+
+.cta-button {
+    margin-top: 2rem; /* mt-8 */
+    display: inline-block;
+    background-color: #16a34a; /* bg-green-600 */
+    color: #fff;
+    font-weight: 700; /* font-bold */
+    padding: 0.75rem 2rem; /* py-3 px-8 */
+    border-radius: 9999px; /* rounded-full */
+    font-size: 1.25rem; /* text-xl */
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3); /* shadow-lg */
+}
+
+.cta-button:hover {
+    background-color: #15803d; /* hover:bg-green-700 */
+    transform: scale(1.05); /* hover:scale-105 */
+}
+
+.social-links {
+    margin-top: 3rem; /* mt-12 */
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem; /* space-x-6 */
+    color: #4ade80; /* text-green-400 */
+}
+
+.social-links a {
+    font-size: 2.5rem; /* text-4xl */
+    transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+    color: #bbf7d0; /* hover:text-green-200 */
+}
+
+/* FOOTER */
+.footer {
+    background-color: #1a202c; /* bg-gray-900 */
+    color: #a0aec0; /* text-gray-500 */
+    text-align: center;
+    padding: 1rem; /* p-4 */
+    margin-top: auto; /* Pousse le footer en bas */
+}
+
+.footer p {
+    font-size: 0.875rem; /* text-sm */
+}
+
+.footer .footer-links {
+    margin-top: 0.5rem; /* mt-2 */
+    font-size: 0.875rem; /* text-sm */
+}
+
+.footer .footer-links a {
+    margin: 0 1rem; /* mr-4 */
+    display: inline-block;
+}
+
+/* MEDIA QUERIES (Responsive Design) */
+@media (min-width: 768px) { /* md: equivalent de Tailwind (768px est une taille commune pour "medium") */
+    .header {
+        padding: 2rem 2rem; /* p-8 */
+    }
+    .header .logo img {
+        height: 8rem; /* h-32 */
+        width: 8rem; /* w-32 */
+    }
+    .nav-desktop {
+        display: flex; /* Affiché sur desktop */
+    }
+    .hamburger-button {
+        display: none; /* Caché sur desktop */
+    }
+    .hero-section h1 {
+        font-size: 3.75rem; /* text-6xl */
+    }
+    .hero-section p {
+        margin-top: 1.5rem; /* mt-6 */
+        font-size: 1.5rem; /* text-2xl */
+    }
+    .circular-element {
+        width: 24rem; /* w-96 */
+        height: 24rem; /* h-96 */
+    }
+}

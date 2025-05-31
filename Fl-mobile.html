@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHROMAKEY Record - Début avec FL Studio Mobile</title> <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* BASE STYLES & RESET (copié de index.html pour cohérence) */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            /* Ajustement pour que le contenu ne soit pas caché par la barre défilante */
+            padding-top: 2rem; /* Augmentez ce padding en fonction de la hauteur de votre barre défilante */
+            /* La barre défilante fait environ 1.5rem de haut avec le padding. 2rem est une bonne marge */
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #22c55e; /* Vert Tailwind 500 */
+        }
+
+        /* Styles pour la barre défilante en haut de page */
+        .scrolling-bar {
+            position: fixed; /* Fixé en haut de l'écran */
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #000; /* Fond noir */
+            color: #22c55e; /* Texte vert */
+            padding: 0.3rem 0; /* Un peu de rembourrage vertical */
+            font-size: 0.9rem; /* Taille de police, ajustez si besoin */
+            white-space: nowrap; /* Empêche le texte de passer à la ligne */
+            overflow: hidden; /* Cache le texte qui dépasse */
+            z-index: 1000; /* Assurez-vous qu'il soit au-dessus de tout le reste, y compris le header */
+            box-shadow: 0 2px 5px rgba(34, 197, 94, 0.3); /* Légère ombre verte */
+        }
+
+        .scrolling-text {
+            display: inline-block; /* Nécessaire pour l'animation de défilement */
+            padding-left: 100%; /* Le texte commence hors de l'écran à droite */
+            animation: scrollText 30s linear infinite; /* Animation de défilement, ajustez la durée (30s) pour la vitesse */
+        }
+
+        @keyframes scrollText {
+            0% { transform: translateX(0); } /* Commence à droite de la barre */
+            100% { transform: translateX(-100%); } /* Défile jusqu'à ce qu'il soit complètement à gauche */
+        }
+
+        /* HEADER (copié de index.html pour cohérence) */
+        .header {
+            position: absolute;
+            /* Décalez le header vers le bas de la hauteur de la barre défilante */
+            top: 2rem;
+            left: 0;
+            width: 100%;
+            z-index: 10;
+            padding: 1rem 1rem; /* p-4 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header .logo img {
+            height: 5rem; /* h-24 */
+            width: 5rem; /* w-24 */
+            object-fit: contain;
+            filter: drop-shadow(0 0 0px rgba(34, 197, 94, 0.0));
+        }
+
+        .nav-desktop {
+            display: none; /* Caché par défaut pour mobile */
+            gap: 2rem; /* space-x-8 */
+            font-size: 1.125rem; /* text-lg */
+        }
+
+        .nav-desktop a {
+            padding: 0.5rem 0;
+            position: relative;
+        }
+
+        .nav-desktop a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #22c55e;
+            transition: width 0.3s ease;
+        }
+
+        .nav-desktop a:hover::after {
+            width: 100%;
+        }
+
+        .hamburger-button {
+            background: none;
+            border: none;
+            color: #22c55e;
+            font-size: 2rem;
+            cursor: pointer;
+            display: block;
+        }
+
+        /* MOBILE NAVIGATION (Overlay) (copié de index.html pour cohérence) */
+        .nav-mobile {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transform: translateX(100%);
+            transition: transform 0.4s ease-out;
+        }
+
+        .nav-mobile.open {
+            transform: translateX(0);
+        }
+
+        .nav-mobile a {
+            font-size: 2.5rem;
+            padding: 1.5rem 0;
+            color: #22c55e;
+        }
+
+        .nav-mobile .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 3rem;
+            cursor: pointer;
+        }
+
+        /* MAIN CONTENT for this page */
+        .page-content { /* Renommé de .blog-content pour être plus générique */
+            flex-grow: 1; /* Permet au contenu de prendre l'espace disponible */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Centre le contenu horizontalement */
+            justify-content: center; /* Centre le contenu verticalement si l'écran est grand */
+            padding: 6rem 1rem 2rem; /* p-4, mais avec plus d'espace en haut pour le header */
+            background: linear-gradient(to bottom right, #1a202c, #000); /* Même dégradé que la page d'accueil */
+            position: relative;
+            z-index: 0;
+            /* Ajustement padding-top pour tenir compte de la barre défilante et du header */
+            padding-top: 8rem; /* Ajustez cette valeur si le contenu se superpose au header */
+        }
+
+        .article-container { /* Renommé de .blog-post pour être plus générique */
+            max-width: 48rem; /* max-w-2xl ou 3xl pour un article de blog */
+            width: 100%;
+            padding: 1.5rem;
+            background-color: rgba(26, 32, 44, 0.8); /* bg-gray-900 avec transparence */
+            border-radius: 0.75rem; /* rounded-lg */
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3); /* shadow-lg */
+            margin-top: 2rem; /* Espace au-dessus du post */
+        }
+
+        .article-container h1 {
+            font-size: 2rem; /* text-3xl */
+            color: #22c55e; /* text-green-500 */
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .article-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem; /* rounded-md */
+            margin-bottom: 1.5rem;
+            display: block; /* Supprime l'espace sous l'image */
+            margin-left: auto; /* Centre l'image */
+            margin-right: auto; /* Centre l'image */
+        }
+
+        .article-container p {
+            font-size: 1rem; /* text-base */
+            line-height: 1.6; /* leading-relaxed */
+            color: #d1d5db; /* text-gray-300 */
+            margin-bottom: 1rem;
+        }
+
+        /* FOOTER (copié de index.html pour cohérence) */
+        .footer {
+            background-color: #1a202c;
+            color: #a0aec0;
+            text-align: center;
+            padding: 1rem;
+            margin-top: auto;
+        }
+
+        .footer p {
+            font-size: 0.875rem;
+        }
+
+        .footer .footer-links {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .footer .footer-links a {
+            margin: 0 1rem;
+            display: inline-block;
+        }
+
+        /* MEDIA QUERIES (Responsive Design - copié de index.html pour cohérence) */
+        @media (min-width: 768px) { /* md: */
+            .scrolling-bar {
+                font-size: 1rem; /* Ajustez la taille de police pour les écrans plus grands */
+                padding: 0.4rem 0;
+            }
+            body {
+                padding-top: 2.2rem; /* Ajustez le padding pour les écrans plus grands si la barre est plus haute */
+            }
+            .header {
+                top: 2.2rem; /* Ajustez la position du header en conséquence */
+                padding: 2rem 2rem;
+            }
+            .header .logo img {
+                height: 5rem;
+                width: 5rem; /* Consistente avec votre code fourni */
+            }
+            .nav-desktop {
+                display: flex;
+            }
+            .hamburger-button {
+                display: none;
+            }
+            .page-content { /* Renommé */
+                padding-top: 10rem; /* Plus d'espace pour le header agrandi */
+            }
+            .article-container { /* Renommé */
+                padding: 2.5rem;
+            }
+            .article-container h1 {
+                font-size: 3rem;
+            }
+            .article-container p {
+                font-size: 1.125rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scrolling-bar">
+        <span class="scrolling-text">
+            CHROMAKEY RECORD - Votre univers musical - Des beats exclusifs pour libérer votre créativité ! - CHROMAKEY RECORD - La musique est une thérapie, nos beats votre inspiration ! - CHROMAKEY RECORD - Qualité sonore inégalée -
+        </span>
+    </div>
+    <header class="header">
+        <div class="logo">
+            <img src="/20240505_195256.png" alt="CHROMAKEY Record Logo">
+        </div>
+
+        <nav class="nav-desktop">
+            <a href="index.html">Accueil</a>
+            <a href="blog.html">Blog</a>
+            <a href="Fl-mobile.html">Début Avec Fl</a>
+            <a href="Inspiration.html">Inspiration</a>
+            <a href="beats.html">Beats</a>
+            <a href="apropos.html">A-Propos</a>
+            <a href="Mercrebeat.html">Mercrebeat</a>
+        </nav>
+
+        <button class="hamburger-button" aria-label="Ouvrir le menu de navigation">
+            ☰
+        </button>
+    </header>
+
+    <div class="nav-mobile" id="mobile-menu">
+        <button class="close-button" aria-label="Fermer le menu de navigation">
+            &times;
+        </button>
+        <a href="index.html" class="mobile-link">Accueil</a>
+        <a href="blog.html" class="mobile-link">Blog</a>
+        <a href="Fl-mobile.html" class="mobile-link">Début Avec Fl</a> <a href="Inspiration.html" class="mobile-link">Inspiration</a>
+        <a href="beats.html" class="mobile-link">Beats</a>
+        <a href="apropos.html" class="mobile-link">A-Propos</a>
+        <a href="Mercrebeat.html" class="mobile-link">Mercrebeat</a>
+    </div>
+
+    <main class="page-content"> <div class="article-container"> <h1>𝔽𝕃 𝕄𝕆𝔹𝕀𝕃𝔼</h1>
+            <img src="/fl studio mobile.png" alt="Image d'illustration FL Studio Mobile">
+
+            <p>Après avoir fait quelques recherches, lorsque j'avais 12 ans, j'ai opté pour FL Studio Mobile. Cette application pour Android, disponible sur Play Store, m'a séduit par sa simplicité d'utilisation et son efficacité. Les tutoriels disponibles en ligne m'ont énormément aidé à prendre en main les bases de la production musicale. Petit à petit, j'ai commencé à expérimenter avec les différents outils, à créer mes premières boucles et à assembler mes propres beats.
+            </p>
+
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; <span id="currentYearFlMobile"></span> CHROMAKEY Record. Tous droits réservés.</p> <div class="footer-links">
+            <a href="#mentions-legales">Mentions Légales</a>
+            <a href="#cgv">Conditions Générales de Vente</a>
+        </div>
+    </footer>
+
+    <script>
+        // JavaScript pour la logique du bouton hamburger (copié de index.html pour cohérence)
+        const hamburgerButton = document.querySelector('.hamburger-button');
+        const closeButton = document.querySelector('.nav-mobile .close-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.nav-mobile .mobile-link');
+        const currentYearSpan = document.getElementById('currentYearFlMobile'); // ID mis à jour
+
+        // Mettre à jour l'année courante dans le footer
+        if (currentYearSpan) {
+            currentYearSpan.textContent = new Date().getFullYear();
+        }
+
+        // Ouvrir le menu mobile
+        if (hamburgerButton) {
+            hamburgerButton.addEventListener('click', () => {
+                if (mobileMenu) {
+                    mobileMenu.classList.add('open');
+                }
+            });
+        }
+
+        // Fermer le menu mobile
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                if (mobileMenu) {
+                    mobileMenu.classList.remove('open');
+                }
+            });
+        }
+
+        // Fermer le menu mobile quand un lien est cliqué
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (mobileMenu) {
+                    mobileMenu.classList.remove('open');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

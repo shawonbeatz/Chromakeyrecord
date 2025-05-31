@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHROMAKEY Record - Beats</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* BASE STYLES & RESET (copié de index.html pour cohérence) */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            /* Ajustement pour que le contenu ne soit pas caché par la barre défilante */
+            padding-top: 2rem; /* Augmentez ce padding en fonction de la hauteur de votre barre défilante */
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #22c55e; /* Vert Tailwind 500 */
+        }
+
+        /* Styles pour la barre défilante en haut de page */
+        .scrolling-bar {
+            position: fixed; /* Fixé en haut de l'écran */
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #000; /* Fond noir */
+            color: #22c55e; /* Texte vert */
+            padding: 0.3rem 0; /* Un peu de rembourrage vertical */
+            font-size: 0.9rem; /* Taille de police, ajustez si besoin */
+            white-space: nowrap; /* Empêche le texte de passer à la ligne */
+            overflow: hidden; /* Cache le texte qui dépasse */
+            z-index: 1000; /* Assurez-vous qu'il soit au-dessus de tout le reste, y compris le header */
+            box-shadow: 0 2px 5px rgba(34, 197, 94, 0.3); /* Légère ombre verte */
+        }
+
+        .scrolling-text {
+            display: inline-block; /* Nécessaire pour l'animation de défilement */
+            padding-left: 100%; /* Le texte commence hors de l'écran à droite */
+            animation: scrollText 30s linear infinite; /* Animation de défilement, ajustez la durée (30s) pour la vitesse */
+        }
+
+        @keyframes scrollText {
+            0% { transform: translateX(0); } /* Commence à droite de la barre */
+            100% { transform: translateX(-100%); } /* Défile jusqu'à ce qu'il soit complètement à gauche */
+        }
+
+        /* HEADER (copié de index.html pour cohérence) */
+        .header {
+            position: absolute;
+            /* Décalez le header vers le bas de la hauteur de la barre défilante */
+            top: 2rem;
+            left: 0;
+            width: 100%;
+            z-index: 10;
+            padding: 1rem 1rem; /* p-4 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header .logo img {
+            height: 5rem; /* h-24 */
+            width: 5rem; /* w-24 */
+            object-fit: contain;
+            filter: drop-shadow(0 0 0px rgba(34, 197, 94, 0.5));
+        }
+
+        .nav-desktop {
+            display: none; /* Caché par défaut pour mobile */
+            gap: 2rem; /* space-x-8 */
+            font-size: 1.125rem; /* text-lg */
+        }
+
+        .nav-desktop a {
+            padding: 0.5rem 0;
+            position: relative;
+        }
+
+        .nav-desktop a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #22c55e;
+            transition: width 0.3s ease;
+        }
+
+        .nav-desktop a:hover::after {
+            width: 100%;
+        }
+
+        .hamburger-button {
+            background: none;
+            border: none;
+            color: #22c55e;
+            font-size: 2rem;
+            cursor: pointer;
+            display: block;
+        }
+
+        /* MOBILE NAVIGATION (Overlay) (copié de index.html pour cohérence) */
+        .nav-mobile {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transform: translateX(100%);
+            transition: transform 0.4s ease-out;
+        }
+
+        .nav-mobile.open {
+            transform: translateX(0);
+        }
+
+        .nav-mobile a {
+            font-size: 2.5rem;
+            padding: 1.5rem 0;
+            color: #22c55e;
+        }
+
+        .nav-mobile .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 3rem;
+            cursor: pointer;
+        }
+
+        /* --- STYLES FOR BACKGROUND OVERLAY AND CIRCULAR ELEMENT --- */
+        .background-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom right, #1a202c, #000); /* from-gray-900 to-black */
+            opacity: 0.9;
+            z-index: -1; /* S'assure qu'il est en arrière-plan */
+        }
+
+        .circular-element {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 16rem; /* w-64 */
+            height: 16rem; /* h-64 */
+            border-radius: 9999px; /* rounded-full */
+            background-color: rgba(34, 197, 94, 0.2); /* green-700 opacity-20 */
+            animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1); /* animate-pulse */
+            z-index: -1; /* S'assure qu'il est en arrière-plan */
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 0.4; }
+        }
+        /* --- FIN DES STYLES POUR LE FOND --- */
+
+        /* MAIN CONTENT for BEATS PAGE */
+        .beats-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 6rem 1rem 2rem;
+            position: relative;
+            z-index: 0;
+            overflow: hidden;
+            /* Ajustement padding-top pour tenir compte de la barre défilante et du header */
+            padding-top: 8rem; /* Ajustez cette valeur si le contenu se superpose au header */
+        }
+
+        .beats-section {
+            max-width: 48rem;
+            width: 100%;
+            padding: 1.5rem;
+            background-color: rgba(26, 32, 44, 0.8);
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+            text-align: center; /* Centrer le contenu dans la section */
+        }
+
+        .beats-section h2 {
+            font-size: 2rem;
+            color: #22c55e;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .beats-section p {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #d1d5db;
+            margin-bottom: 1rem;
+        }
+
+        /* Style pour l'image de couverture du beat */
+        .beat-cover {
+            width: 100%;
+            max-width: 20rem; /* Taille max pour la couverture */
+            height: auto;
+            margin: 0 auto 1.5rem auto; /* Centre et ajoute un espace en bas */
+            border-radius: 0.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            display: block; /* S'assurer qu'il prend toute la largeur disponible */
+        }
+
+        /* STYLING THE AUDIO PLAYER */
+        .beats-section audio {
+            width: 90%; /* Largeur du lecteur audio */
+            max-width: 25rem; /* Limite la largeur max */
+            margin: 1rem auto; /* Centre le lecteur et ajoute de l'espace */
+            display: block; /* S'assurer qu'il est en bloc pour le margin auto */
+            background-color: #3B3A4400; /* Fond principal du lecteur en vert */
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem; /* Ajoute du padding pour le style interne */
+            outline: none; /* Supprimer la bordure de focus par défaut */
+        }
+
+        /* Stylisation spécifique des contrôles pour Webkit (Chrome, Safari, etc.) */
+        .beats-section audio::-webkit-media-controls-panel {
+            background-color: #22c55e; /* Fond des contrôles en vert */
+            color: #000; /* Couleur par défaut des icônes/texte (peut être surchargé) */
+        }
+
+        /* Icônes de contrôle (Play, Mute, Fullscreen) */
+        .beats-section audio::-webkit-media-controls-play-button,
+        .beats-section audio::-webkit-media-controls-mute-button,
+        .beats-section audio::-webkit-media-controls-toggle-closed-captions-button,
+        .beats-section audio::-webkit-media-controls-fullscreen-button {
+            color: #000; /* Icônes en noir pour contraster sur le vert */
+            filter: drop-shadow(0 0 1px rgba(0,0,0,0.5)); /* Légère ombre pour la lisibilité */
+        }
+
+        /* Minuteur (temps) */
+        .beats-section audio::-webkit-media-controls-current-time-display,
+        .beats-section audio::-webkit-media-controls-time-remaining-display {
+            color: #000; /* Minuteur en noir */
+            text-shadow: 0 0 1px rgba(0,0,0,0.7); /* Ombre pour meilleure lisibilité */
+        }
+
+        /* Barre de progression (timeline) */
+        .beats-section audio::-webkit-media-controls-timeline {
+            background-color: #00000000; /* Fond de la barre de progression en noir */
+        }
+
+        /* Curseur de la barre de progression (thumb) */
+        .beats-section audio::-webkit-media-controls-timeline::-webkit-slider-thumb {
+            background-color: #000; /* Curseur noir */
+            border: 2px solid #000; /* Bordure noire pour le contraste */
+            border-radius: 50%;
+            height: 12px;
+            width: 12px;
+        }
+
+        /* Barre de volume (track) */
+        .beats-section audio::-webkit-media-controls-volume-slider {
+            background-color: #000; /* Fond noir pour la barre de volume */
+        }
+        /* Curseur de volume (thumb) */
+        .beats-section audio::-webkit-media-controls-volume-slider::-webkit-slider-thumb {
+            background-color: #fff; /* Curseur blanc */
+            border: 2px solid #000; /* Bordure noire */
+            border-radius: 50%;
+            height: 12px;
+            width: 12px;
+        }
+
+
+        /* Pour Firefox (stylisation plus limitée sans librairie JS) */
+        .beats-section audio::-moz-range-track {
+            background-color: #FFFFFF00; /* Fond noir pour la barre de progression */
+        }
+        .beats-section audio::-moz-range-thumb {
+            background-color: #FFFFFF00; /* Curseur blanc */
+            border: 2px solid #22c55e; /* Bordure verte */
+        }
+        .beats-section audio::-moz-focus-ring {
+            outline: none;
+        }
+
+        /* FOOTER (copié de index.html pour cohérence) */
+        .footer {
+            background-color: #1a202c;
+            color: #a0aec0;
+            text-align: center;
+            padding: 1rem;
+            margin-top: auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer p {
+            font-size: 0.875rem;
+        }
+
+        .footer .footer-links {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .footer .footer-links a {
+            margin: 0 1rem;
+            display: inline-block;
+        }
+
+        /* MEDIA QUERIES (Responsive Design) */
+        @media (min-width: 768px) { /* md: */
+            .scrolling-bar {
+                font-size: 1rem; /* Ajustez la taille de police pour les écrans plus grands */
+                padding: 0.4rem 0;
+            }
+            body {
+                padding-top: 2.2rem; /* Ajustez le padding pour les écrans plus grands si la barre est plus haute */
+            }
+            .header {
+                top: 2.2rem; /* Ajustez la position du header en conséquence */
+                padding: 2rem 2rem;
+            }
+            .header .logo img {
+                height: 5rem;
+                width: 5rem;
+            }
+            .nav-desktop {
+                display: flex;
+            }
+            .hamburger-button {
+                display: none;
+            }
+            .beats-content {
+                padding-top: 10rem; /* Plus d'espace pour le header agrandi */
+            }
+            .beats-section {
+                padding: 2.5rem;
+            }
+            .beats-section h2 {
+                font-size: 3rem;
+            }
+            .beats-section p {
+                font-size: 1.125rem;
+            }
+            .circular-element {
+                width: 24rem; /* w-96 */
+                height: 24rem; /* h-96 */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scrolling-bar">
+        <span class="scrolling-text">
+            CHROMAKEY RECORD - Votre univers musical - Des beats exclusifs pour libérer votre créativité ! - CHROMAKEY RECORD - La musique est une thérapie, nos beats votre inspiration ! - CHROMAKEY RECORD - Qualité sonore inégalée -
+        </span>
+    </div>
+    <header class="header">
+        <div class="logo">
+            <img src="/20240505_195256.png" alt="CHROMAKEY Record Logo">
+        </div>
+
+        <nav class="nav-desktop">
+            <a href="index.html">Accueil</a>
+            <a href="blog.html">Blog</a>
+            <a href="Fl-mobile.html">Début Avec Fl</a>
+            <a href="Inspiration.html">Inspiration</a>
+            <a href="beats.html">Beats</a>
+            <a href="apropos.html">À-Propos</a>
+            <a href="Mercrebeat.html">Mercrebeat</a>
+        </nav>
+
+        <button class="hamburger-button" aria-label="Ouvrir le menu de navigation">
+            ☰
+        </button>
+    </header>
+
+    <div class="nav-mobile" id="mobile-menu">
+        <button class="close-button" aria-label="Fermer le menu de navigation">
+            &times;
+        </button>
+        <a href="index.html" class="mobile-link">Accueil</a>
+        <a href="blog.html" class="mobile-link">Blog</a>
+        <a href="Fl-mobile.html" class="mobile-link">Début Avec Fl</a>
+        <a href="Inspiration.html" class="mobile-link">Inspiration</a>
+        <a href="beats.html" class="mobile-link">Beats</a>
+        <a href="apropos.html" class="mobile-link">À-Propos</a>
+        <a href="Mercrebeat.html" class="mobile-link">Mercrebeat</a>
+    </div>
+
+    <main class="beats-content">
+        <div class="background-overlay"></div>
+        <div class="circular-element"></div>
+
+        <div class="beats-section">
+            <h2>ℕ𝕆𝕊 𝔹𝔼𝔸𝕋𝕊</h2>
+            <p>
+               𝘿é𝙘𝙤𝙪𝙫𝙧𝙚𝙯 𝙣𝙤𝙩𝙧𝙚 𝙘𝙖𝙩𝙖𝙡𝙤𝙜𝙪𝙚 𝙙𝙚 𝙗𝙚𝙖𝙩𝙨, 𝙘𝙡𝙖𝙨𝙨é𝙨 𝙥𝙖𝙧 𝙣𝙞𝙫𝙚𝙖𝙪 𝙥𝙤𝙪𝙧 𝙫𝙤𝙪𝙨 𝙖𝙞𝙙𝙚𝙧 à 𝙩𝙧𝙤𝙪𝙫𝙚𝙧 𝙡'𝙞𝙣𝙨𝙥𝙞𝙧𝙖𝙩𝙞𝙤𝙣 𝙥𝙖𝙧𝙛𝙖𝙞𝙩𝙚 𝙥𝙤𝙪𝙧 𝙫𝙤𝙩𝙧𝙚 𝙥𝙧𝙤𝙘𝙝𝙖𝙞𝙣 𝙢𝙤𝙧𝙘𝙚𝙖𝙪. 𝘾𝙝𝙖𝙦𝙪𝙚 𝙗𝙚𝙖𝙩 𝙚𝙨𝙩 𝙘𝙤𝙣ç𝙪 𝙖𝙫𝙚𝙘 𝙥𝙖𝙨𝙨𝙞𝙤𝙣 𝙚𝙩 𝙚𝙭𝙥𝙚𝙧𝙩𝙞𝙨𝙚.
+            </p>
+        </div>
+
+        <div class="beats-section" id="beat-elementaire">
+            <h2>𝔹𝔸𝕊𝕀ℂ</h2>
+            <p>
+                Idéal pour les débutants ou pour ceux qui recherchent une base solide et épurée. Ce beat est caractérisé par un rythme simple mais entraînant, des mélodies claires et une structure facile à appréhender. Il offre une toile vierge parfaite pour laisser s'exprimer votre créativité vocale.
+            </p>
+            <img src="/Fl studio 20 icone.png" alt="Cover Beat Élémentaire" class="beat-cover">
+            <audio controls>
+                <source src="/eleeee.mp3" type="audio/mpeg">
+                Votre navigateur ne supporte pas l'élément audio.
+            </audio>
+        </div>
+
+        <div class="beats-section" id="beat-moyen">
+            <h2>𝕄𝔼𝔻𝕀𝕌𝕄</h2>
+            <p>
+                Ce niveau de beat apporte plus de complexité avec des couches instrumentales supplémentaires, des changements de rythme subtils et des arrangements plus élaborés. Parfait pour les artistes ayant déjà une bonne maîtrise du flow et cherchant à ajouter de la profondeur et du dynamisme à leurs morceaux. Une fusion équilibrée de groove et de textures sonores.
+            </p>
+            <img src="/Fl studio 20 icone.png" alt="Cover Beat Moyen" class="beat-cover">
+            <audio controls>
+                <source src="/Moyeeee .mp3" type="audio/mpeg">
+                Votre navigateur ne supporte pas l'élément audio.
+            </audio>
+        </div>
+
+        <div class="beats-section" id="beat-ultra">
+            <h2>ℙℝ𝔼𝕄𝕀𝕌𝕄</h2>
+            <p>
+                Conçu pour les producteurs et artistes expérimentés, le Beat Ultra est une symphonie complexe de rythmes innovants, d'harmonies audacieuses et de textures sonores avant-gardistes. Chaque élément est minutieusement travaillé pour offrir une expérience auditive riche et immersive, poussant les limites de la production moderne. Attendez-vous à un challenge et à une innovation sonore inégalée.
+            </p>
+            <img src="/Fl studio 20 icone.png" alt="Cover Beat Ultra" class="beat-cover">
+            <audio controls>
+                <source src="/prooo.mp3" type="audio/mpeg">
+                Votre navigateur ne supporte pas l'élément audio.
+            </audio>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; <span id="currentYearBeats"></span> CHROMAKEY Record. Tous droits réservés.</p>
+        <div class="footer-links">
+            <a href="#mentions-legales">Mentions Légales</a>
+            <a href="#cgv">Conditions Générales de Vente</a>
+        </div>
+    </footer>
+
+    <script>
+        // JavaScript pour la logique du bouton hamburger (copié de index.html pour cohérence)
+        const hamburgerButton = document.querySelector('.hamburger-button');
+        const closeButton = document.querySelector('.nav-mobile .close-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.nav-mobile .mobile-link');
+        const currentYearSpan = document.getElementById('currentYearBeats');
+
+        if (currentYearSpan) { // Ajout d'une vérification pour s'assurer que l'élément existe
+            currentYearSpan.textContent = new Date().getFullYear();
+        }
+
+        if (hamburgerButton) { // Ajout d'une vérification pour s'assurer que l'élément existe
+            hamburgerButton.addEventListener('click', () => {
+                if (mobileMenu) {
+                    mobileMenu.classList.add('open');
+                }
+            });
+        }
+
+        if (closeButton) { // Ajout d'une vérification pour s'assurer que l'élément existe
+            closeButton.addEventListener('click', () => {
+                if (mobileMenu) {
+                    mobileMenu.classList.remove('open');
+                }
+            });
+        }
+
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                if (mobileMenu) {
+                    mobileMenu.classList.remove('open');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
